@@ -2,8 +2,9 @@ import requests
 import os
 from database.db_setup import get_mongo_client
 from user_management.preferences import get_user_preferences
+from config.config_loader import NEWSAPI_KEY
 
-API_KEY = os.getenv("NEWSAPI_KEY")
+API_KEY = NEWSAPI_KEY
 API_URL = "https://newsapi.org/v2/everything"
 
 def fetch_news(query, page_size=10):
@@ -28,6 +29,8 @@ def save_news_to_db(query, user_id):
     filtered_query = query if query in topics else topics
     
     articles = fetch_news(filtered_query)
+    if not articles:
+        raise ValueError("No articles returned from the API.")
     db = get_mongo_client()
     
     # Insert the articles with the user_id to associate them with the correct user
