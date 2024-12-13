@@ -19,7 +19,7 @@ REDDIT_CLIENT_SECRET = os.getenv("REDDIT_CLIENT_SECRET")
 NEWSAPI_KEY = os.getenv("NEWSAPI_KEY")
 
 # MongoDB URI
-MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://devintechy:inqR1pIdtsUbjgGp@cluster0.b9w9m.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+MONGO_URI = os.getenv("MONGO_URI")
 
 # OpenAI
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
