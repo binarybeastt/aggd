@@ -20,7 +20,7 @@ class NotificationScheduler:
         self.summary_collection = self.db['article_summaries']
 
         # Initialize Firebase Admin SDK
-        cred = credentials.Certificate('summarizer/smart-notifications-9caa0-firebase-adminsdk-xt9d4-0ed2832b13.json')
+        cred = credentials.Certificate('/etc/secrets/smart-notifications-9caa0-firebase-adminsdk-xt9d4-0ed2832b13.json')
         firebase_admin.initialize_app(cred)
 
         
