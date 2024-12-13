@@ -3,6 +3,7 @@ chromadb==0.5.23
 fastapi==0.115.6
 firebase_admin==6.6.0
 python-jose
+pydantic[email]
 langchain_community==0.3.11
 openai==1.57.3
 passlib==1.7.4
