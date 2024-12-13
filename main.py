@@ -37,7 +37,7 @@ app = FastAPI()
 app.include_router(fcm_router, prefix="/api")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins (adjust for production)
+    allow_origins=["https://web-tau-three-18.vercel.app"],  # Allows all origins (adjust for production)
     allow_credentials=True,
     allow_methods=["*"],  # Allows all methods
     allow_headers=["*"],  # Allows all headers
