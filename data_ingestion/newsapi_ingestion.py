@@ -40,13 +40,18 @@ def save_news_to_db(query, user_id):
     filtered_query = query if query in topics else topics
     
     articles = fetch_news(filtered_query)
+    
     if not articles:
-        raise ValueError("No articles returned from the API.")
+        # Print a message instead of raising an error to see what happens
+        print("No articles returned from the API.")
     
     db = get_mongo_client()
     
-    # Insert the articles with the user_id to associate them with the correct user
-    for article in articles:
-        article["user_id"] = user_id  # Add the user_id to each article
-    db["news_articles"].insert_many(articles)
-    print(f"Saved {len(articles)} articles to the database.")
+    # If articles exist, insert them into the database
+    if articles:
+        for article in articles:
+            article["user_id"] = user_id  # Add the user_id to each article
+        db["news_articles"].insert_many(articles)
+        print(f"Saved {len(articles)} articles to the database.")
+    else:
+        print("No articles to save.")
