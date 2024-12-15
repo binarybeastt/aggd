@@ -14,10 +14,21 @@ def fetch_news(query, page_size=10):
         "apiKey": API_KEY
     }
     response = requests.get(API_URL, params=params)
+    
     if response.status_code == 200:
-        return response.json()["articles"]
+        return response.json().get("articles", [])
     else:
-        print("Error:", response.status_code, response.text)
+        # Print full error message from the API
+        print(f"Error occurred: HTTP {response.status_code}")
+        print("Response Text:", response.text)
+        
+        # Optionally, you can parse the JSON error response if available
+        try:
+            error_details = response.json()  # Try to get detailed error message in JSON format
+            print("Error Details:", error_details)
+        except ValueError:
+            print("Error response is not in JSON format.")
+        
         return []
 
 def save_news_to_db(query, user_id):
@@ -31,6 +42,7 @@ def save_news_to_db(query, user_id):
     articles = fetch_news(filtered_query)
     if not articles:
         raise ValueError("No articles returned from the API.")
+    
     db = get_mongo_client()
     
     # Insert the articles with the user_id to associate them with the correct user

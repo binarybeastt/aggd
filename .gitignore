@@ -1,4 +1,4 @@
-.venv/
+.myenv/
 config/.env
 __pycache__/
 test.py
