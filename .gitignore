@@ -1,4 +1,4 @@
-.myenv/
+myenv/
 config/.env
 __pycache__/
 test.py
