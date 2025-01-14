@@ -25,6 +25,7 @@ MONGO_URI = os.getenv("MONGO_URI")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
+BING_API_KEY = os.getenv("BING_API_KEY")
 
 # Optional: Validate critical variables
 def validate_env_vars():
@@ -37,7 +38,8 @@ def validate_env_vars():
         "NEWSAPI_KEY": NEWSAPI_KEY,
         "MONGO_URI": MONGO_URI,
         "OPENAI_API_KEY": OPENAI_API_KEY,
-        "TAVILY_API_KEY": TAVILY_API_KEY
+        "TAVILY_API_KEY": TAVILY_API_KEY,
+        "BING_API_KEY": BING_API_KEY
     }
     missing_vars = [key for key, value in required_vars.items() if not value]
     if missing_vars:

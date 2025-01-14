@@ -1,4 +1,5 @@
-myenv/
+venv/
+test3.py
 config/.env
 __pycache__/
 test.py
