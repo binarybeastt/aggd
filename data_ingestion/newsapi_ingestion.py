@@ -5,7 +5,7 @@ from user_management.preferences import get_user_preferences
 from config.config_loader import BING_API_KEY
 
 API_KEY = BING_API_KEY
-ENDPOINT = "https://api.bing.microsoft.com/v7.0/news/search"
+ENDPOINT = "https://api.bing.microsoft.com/v7.0/news"
 ARTICLES_PER_REQUEST = 3
 DEFAULT_MARKET = 'en-US'
 
