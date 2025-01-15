@@ -17,7 +17,7 @@ from summarizer.notification_scheduler import NotificationScheduler
 from summarizer.summ import UserContentSummarizer 
 from summarizer.summary_retriever import get_summary_by_id
 from notifications.notifications_retriever import get_summary_by_notification, get_user_notifications
-from chat.s_chat import RAGChatService
+from chat_s.s_chat import RAGChatService
 from typing import List, Optional
 from bson import ObjectId
 from database.db_setup import get_mongo_client
