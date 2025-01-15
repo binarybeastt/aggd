@@ -49,6 +49,7 @@ def fetch_news(query, page_size=10):
                 transformed_articles = [{
                     "title": article["name"],
                     "description": article.get("description", ""),
+                    "snippet": article.get("snippet", ""),
                     "url": article["url"],
                     "publishedAt": article.get("datePublished", ""),
                     "source": {
