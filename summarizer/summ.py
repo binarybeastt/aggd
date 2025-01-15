@@ -37,7 +37,7 @@ class UserContentSummarizer:
             # First get individual summaries and keep track of articles for references
             article_summaries = []
             for article in recent_articles:
-                text = article.get('content')
+                text = article.get('snippet')
                 if not text:
                     continue
                     
