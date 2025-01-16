@@ -48,9 +48,9 @@ def fetch_news(query, page_size=10):
                 # Transform Bing News format to match existing schema
                 transformed_articles = [{
                     "title": article["name"],
-                    "snippet": article["snippet"],  # Bing News API uses description for the snippet
+                    "snippet": article.get("snippet", ""),  # Bing News API uses description for the snippet
                     "url": article["url"],
-                    "publishedAt": article["datePublished"],
+                    "publishedAt": article.get("datePublished", ""),
                     "source": {
                         "name": article.get("provider", [{}])[0].get("name", "Unknown")
                     }
