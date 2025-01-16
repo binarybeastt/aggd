@@ -53,6 +53,8 @@ class UserContentSummarizer:
             for i, article in enumerate(article_summaries, 1):
                 combined_text += f"Article {i}: {article['summary']}\n\n"
 
+            print(combined_text)
+            print(article_summaries)
             # Generate overall summary with reference points and highlight
             overall_summary = self._generate_overall_summary(combined_text, article_summaries)
             print(overall_summary)
