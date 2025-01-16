@@ -5,7 +5,7 @@ from user_management.preferences import get_user_preferences
 from config.config_loader import BING_API_KEY
 
 API_KEY = BING_API_KEY
-ENDPOINT = "https://api.bing.microsoft.com/v7.0/search"
+ENDPOINT = "https://api.bing.microsoft.com/v7.0/news/search"  # Updated endpoint for News Search API
 ARTICLES_PER_REQUEST = 3
 DEFAULT_MARKET = 'en-US'
 
@@ -40,15 +40,15 @@ def fetch_news(query, page_size=10):
             response.raise_for_status()
             data = response.json()
             
-            if "webPages" in data and "value" in data["webPages"]:
-                articles = data["webPages"]["value"]
+            if "value" in data:  # News results are inside the 'value' field
+                articles = data["value"]
                 if not articles:
                     break
                     
                 # Transform Bing News format to match existing schema
                 transformed_articles = [{
                     "title": article["name"],
-                    "snippet": article.get("snippet", ""),  # Bing News API uses description for the snippet
+                    "snippet": article.get("description", ""),  # Using 'description' for the snippet
                     "url": article["url"],
                     "publishedAt": article.get("datePublished", ""),
                     "source": {
