@@ -50,7 +50,7 @@ def fetch_news(query, page_size=10):
                     "title": article["name"],
                     "snippet": article["snippet"],  # Bing News API uses description for the snippet
                     "url": article["url"],
-                    "publishedAt": article.get["datePublished"],
+                    "publishedAt": article["datePublished"],
                     "source": {
                         "name": article.get("provider", [{}])[0].get("name", "Unknown")
                     }
