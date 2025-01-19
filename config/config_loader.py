@@ -42,8 +42,8 @@ def validate_env_vars():
         "BING_API_KEY": BING_API_KEY
     }
     missing_vars = [key for key, value in required_vars.items() if not value]
-    if missing_vars:
-        raise EnvironmentError(f"Missing environment variables: {', '.join(missing_vars)}")
+    # if missing_vars:
+    #     raise EnvironmentError(f"Missing environment variables: {', '.join(missing_vars)}")
 
 # Call the validation (optional, to catch issues early)
 validate_env_vars()

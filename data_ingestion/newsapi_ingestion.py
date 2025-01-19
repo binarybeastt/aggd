@@ -5,27 +5,33 @@ from user_management.preferences import get_user_preferences
 from config.config_loader import BING_API_KEY
 
 API_KEY = BING_API_KEY
-ENDPOINT = "https://api.bing.microsoft.com/v7.0/news/search"  # Updated endpoint for News Search API
+ENDPOINT = "https://api.bing.microsoft.com/v7.0/news/search"
 ARTICLES_PER_REQUEST = 3
 DEFAULT_MARKET = 'en-US'
 
+import os
+from openai import OpenAI
+from config.config_loader import OPENAI_API_KEY
+
+# Specify your OpenAI API key and embedding model
+
+model = "text-embedding-3-small"
+openai_client = OpenAI(api_key=OPENAI_API_KEY)
+
+# Define a function to generate embeddings
+def get_embedding(text):
+   """Generates vector embeddings for the given text."""
+
+   embedding = openai_client.embeddings.create(input = [text], model=model).data[0].embedding
+   return embedding
+
 def fetch_news(query, page_size=10):
     """
-    Fetch news articles from Bing News API
-    
-    Args:
-        query (str): Search query
-        page_size (int): Number of articles to retrieve
-    
-    Returns:
-        list: List of articles
+    Fetch news articles from Bing News API and return them.
     """
     results = []
     offset = 0
-    
-    headers = {
-        'Ocp-Apim-Subscription-Key': API_KEY
-    }
+    headers = {'Ocp-Apim-Subscription-Key': API_KEY}
     
     while len(results) < page_size:
         params = {
@@ -40,15 +46,14 @@ def fetch_news(query, page_size=10):
             response.raise_for_status()
             data = response.json()
             
-            if "value" in data:  # News results are inside the 'value' field
+            if "value" in data:
                 articles = data["value"]
                 if not articles:
                     break
-                    
-                # Transform Bing News format to match existing schema
+                
                 transformed_articles = [{
                     "title": article["name"],
-                    "snippet": article.get("description", ""),  # Using 'description' for the snippet
+                    "snippet": article.get("description", ""),
                     "url": article["url"],
                     "publishedAt": article.get("datePublished", ""),
                     "source": {
@@ -59,65 +64,46 @@ def fetch_news(query, page_size=10):
                 results.extend(transformed_articles)
                 offset += len(articles)
                 
-                # Respect API rate limits (3 transactions per second)
                 if len(results) < page_size:
-                    time.sleep(1)
+                    time.sleep(1)  # Respect API rate limits
             else:
                 print(f"Unexpected API response format: {data}")
                 break
-                
+        
         except requests.exceptions.RequestException as e:
-            print(f"Error occurred: {str(e)}")
-            if hasattr(e.response, 'text'):
-                print(f"Response text: {e.response.text}")
-            break
-            
-        except Exception as e:
-            print(f"Unexpected error: {str(e)}")
+            print(f"Error occurred: {e}")
             break
     
     return results[:page_size]
 
 def save_news_to_db(query, user_id):
     """
-    Fetch news based on user preferences and save to database
-    
-    Args:
-        query (str): Search query
-        user_id (str): User identifier
+    Fetch news based on user preferences, add embeddings, and save to database.
     """
     preferences = get_user_preferences(user_id)
     topics = preferences.get("topics", [])
     sources = preferences.get("sources", [])
     
-    # Filter the query to only include user preferences
     filtered_query = query if query in topics else topics[0] if topics else query
-    
     articles = fetch_news(filtered_query)
     
     if not articles:
         print("No articles returned from the API.")
         return
     
-    # Filter articles by preferred sources if specified
     if sources:
-        articles = [
-            article for article in articles 
-            if article["source"]["name"] in sources
-        ]
+        articles = [article for article in articles if article["source"]["name"] in sources]
     
     db = get_mongo_client()
+    collection = db["news_articles"]
     
-    if articles:
-        # Add user_id and timestamp to each article
-        for article in articles:
+    for article in articles:
+        try:
+            # Add user_id, timestamp, and embedding
             article["user_id"] = user_id
             article["saved_at"] = time.time()
-            
-        try:
-            db["news_articles"].insert_many(articles)
-            print(f"Saved {len(articles)} articles to the database.")
+            article["embedding"] = get_embedding(article["snippet"])
+            collection.insert_one(article)
+            print(f"Saved article '{article['title']}' with embedding.")
         except Exception as e:
-            print(f"Database error: {str(e)}")
-    else:
-        print("No articles to save after filtering.")
+            print(f"Error saving article '{article['title']}': {e}")

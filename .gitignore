@@ -9,3 +9,6 @@ summarizer/smart-notifications-9caa0-firebase-adminsdk-xt9d4-0ed2832b13.json
 .env
 .env.example
 tools.py
+embeddings.py
+test4.py
+test5.py
