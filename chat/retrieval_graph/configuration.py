@@ -7,7 +7,7 @@ from typing import Annotated, Any, Literal, Optional, Type, TypeVar
 
 from langchain_core.runnables import RunnableConfig, ensure_config
 
-import prompts
+from chat.retrieval_graph import prompts
 
 
 @dataclass(kw_only=True)
