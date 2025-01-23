@@ -12,3 +12,4 @@ tools.py
 embeddings.py
 test4.py
 test5.py
+dump.rdb

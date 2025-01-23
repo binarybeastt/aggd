@@ -8,13 +8,16 @@ The retrievers support filtering results by user_id to ensure data isolation bet
 
 import os
 from contextlib import contextmanager
-from typing import Generator
+from typing import Generator, AsyncGenerator
 
 from langchain_core.embeddings import Embeddings
 from langchain_core.runnables import RunnableConfig
 from langchain_core.vectorstores import VectorStoreRetriever
 
-from retrieval_graph.configuration import Configuration, IndexConfiguration
+from configuration import Configuration, IndexConfiguration
+from custom_retriever import CustomMongoDBRetriever
+from dotenv import load_dotenv
+load_dotenv()
 
 ## Encoder constructors
 
@@ -86,22 +89,39 @@ def make_pinecone_retriever(
     yield vstore.as_retriever(search_kwargs=search_kwargs)
 
 
+# @contextmanager
+# def make_mongodb_retriever(
+#     configuration: IndexConfiguration, embedding_model: Embeddings
+# ) -> Generator[VectorStoreRetriever, None, None]:
+#     """Configure this agent to connect to a specific MongoDB Atlas index & namespaces."""
+#     from langchain_mongodb.vectorstores import MongoDBAtlasVectorSearch
+
+#     vstore = MongoDBAtlasVectorSearch.from_connection_string(
+#         os.environ["MONGODB_URI"],
+#         namespace="langgraph_retrieval_agent.default",
+#         embedding=embedding_model,
+#     )
+#     search_kwargs = configuration.search_kwargs
+#     pre_filter = search_kwargs.setdefault("pre_filter", {})
+#     pre_filter["user_id"] = {"$eq": configuration.user_id}
+#     yield vstore.as_retriever(search_kwargs=search_kwargs)
+
 @contextmanager
 def make_mongodb_retriever(
-    configuration: IndexConfiguration, embedding_model: Embeddings
-) -> Generator[VectorStoreRetriever, None, None]:
-    """Configure this agent to connect to a specific MongoDB Atlas index & namespaces."""
-    from langchain_mongodb.vectorstores import MongoDBAtlasVectorSearch
-
-    vstore = MongoDBAtlasVectorSearch.from_connection_string(
-        os.environ["MONGODB_URI"],
-        namespace="langgraph_retrieval_agent.default",
-        embedding=embedding_model,
-    )
-    search_kwargs = configuration.search_kwargs
-    pre_filter = search_kwargs.setdefault("pre_filter", {})
-    pre_filter["user_id"] = {"$eq": configuration.user_id}
-    yield vstore.as_retriever(search_kwargs=search_kwargs)
+    configuration: IndexConfiguration, 
+    embedding_model: Embeddings
+) -> Generator[CustomMongoDBRetriever, None, None]:
+    """Create a custom MongoDB retriever that works with the retrieve function."""
+    try:
+        retriever = CustomMongoDBRetriever(
+            mongo_uri=os.environ["MONGODB_URI"],
+            embedding_model=embedding_model,
+            search_kwargs=configuration.search_kwargs
+        )
+        yield retriever
+    finally:
+        # Cleanup will happen in the __exit__ method
+        pass
 
 
 @contextmanager

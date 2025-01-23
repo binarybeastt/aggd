@@ -5,21 +5,24 @@ retrieval graph. It includes the main graph definition, state management,
 and key functions for processing user inputs, generating queries, retrieving
 relevant documents, and formulating responses.
 """
-
+import uuid
 from datetime import datetime, timezone
 from typing import cast
 
 from langchain_core.documents import Document
-from langchain_core.messages import BaseMessage
+from langchain_core.messages import BaseMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.pydantic_v1 import BaseModel
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import StateGraph
 
-from retrieval_graph import retrieval
-from retrieval_graph.configuration import Configuration
-from retrieval_graph.state import InputState, State
-from retrieval_graph.utils import format_docs, get_message_text, load_chat_model
+import retrieval
+from configuration import Configuration
+from state import InputState, State
+from utils import format_docs, get_message_text, load_chat_model
+from redis_functions import *
+
+import asyncio
 
 # Define the function that calls the model
 
@@ -147,8 +150,100 @@ builder.add_edge("retrieve", "respond")
 
 # Finally, we compile it!
 # This compiles it into a graph you can invoke and deploy.
-graph = builder.compile(
-    interrupt_before=[],  # if you want to update the state before calling the tools
-    interrupt_after=[],
-)
-graph.name = "RetrievalGraph"
+# graph = builder.compile(
+#     interrupt_before=[],  # if you want to update the state before calling the tools
+#     interrupt_after=[],
+# )
+# graph.name = "RetrievalGraph"
+async def process_stream(question, user_id):
+    input_state = {
+        "messages": [
+            HumanMessage(content=question)
+        ],
+        "configurable": {
+            "user_id": user_id
+        }
+    }
+    
+    async with AsyncRedisSaver.from_conn_info(
+        host="localhost", port=6379, db=0
+    ) as checkpointer:
+        graph = builder.compile(interrupt_before=[], interrupt_after=[], checkpointer=checkpointer)
+        
+        async for event in graph.astream(
+            input_state,  # Added input_state
+            config={
+                "configurable": {
+                    "user_id": user_id,
+                    "retriever_provider": "mongodb",
+                    "embedding_model": "openai/text-embedding-3-small",
+                    "response_model": "openai/gpt-4o-mini",
+                    "query_model": "openai/gpt-4o-mini",
+                    "thread_id":'2',
+                    "search_kwargs": {
+                        "k": 4,
+                        "search_options": {
+                            "numCandidates": 100,
+                        }
+                    }
+                }
+            }
+        ):
+            if 'respond' in event:
+                response = event['respond']['messages'][0]
+                print("Assistant response:", response.content)
+                return response.content
+
+    # In case no response is found
+    return None
+
+#     latest_checkpoint = await checkpointer.aget(config)
+#     latest_checkpoint_tuple = await checkpointer.aget_tuple(config)
+#     checkpoint_tuples = [c async for c in checkpointer.alist(config)]
+
+# import asyncio
+# from langchain_core.messages import HumanMessage
+# async def process_stream(question, user_id):
+#     # Create the input state with just messages
+#     input_state = {
+#         "messages": [
+#             HumanMessage(content=question)
+#         ],
+#         # Configuration will be set in RunnableConfig
+#         "configurable": {
+#             "user_id": user_id
+#         }
+#     }
+
+#     async for event in graph.astream(
+#         input_state,
+#         config={
+#             "configurable": {
+#                 "user_id": user_id,
+#                 "retriever_provider": "mongodb",
+#                 "embedding_model": "openai/text-embedding-3-small",
+#                 "response_model": "openai/gpt-4o-mini",
+#                 "query_model": "openai/gpt-4o-mini",
+#                 "search_kwargs": {
+#                 "k": 4,
+#                 "search_options": {
+#                     "numCandidates": 100,
+#                 }
+#             }
+#             }
+#         }
+#     ):
+#         print("Debug - Full event:", event)
+#         if 'generate_query' in event:
+#             queries = event['generate_query']['queries']
+#             print("Generated queries:", queries)
+#         elif 'retrieve' in event:
+#             docs = event['retrieve']['retrieved_docs']
+#             print("Retrieved docs:", len(docs))
+#         elif 'respond' in event:
+#             response = event['respond']['messages'][0]
+#             print("Assistant response:", response.content)
+
+if __name__ == "__main__":
+    question = "I don't understand"
+    asyncio.run(process_stream(question, 1))

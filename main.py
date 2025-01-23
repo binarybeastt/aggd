@@ -1,5 +1,6 @@
 import os
 import json
+import uuid
 from fastapi import FastAPI, Depends, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -18,6 +19,7 @@ from summarizer.summ import UserContentSummarizer
 from summarizer.summary_retriever import get_summary_by_id
 from notifications.notifications_retriever import get_summary_by_notification, get_user_notifications
 from chat_s.s_chat import RAGChatService
+from chat.retrieval_graph import graph
 from typing import List, Optional
 from bson import ObjectId
 from database.db_setup import get_mongo_client
@@ -26,9 +28,12 @@ from pydantic import BaseModel
 import logging
 logger = logging.getLogger(__name__)
 
-class ChatHistoryItem(BaseModel):
-    role: str
-    content: str
+class QuestionRequest(BaseModel):
+    question: str
+    user_id: int
+
+class QuestionResponse(BaseModel):
+    response: str
 
 db = get_mongo_client()
 
@@ -183,46 +188,71 @@ async def test_notifications(current_user: dict = Depends(get_current_user)):
 #         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/chat/{summary_id}")
-async def chat_endpoint(request: Request, summary_id: str, current_user: dict = Depends(get_current_user)):
+async def ask_question(request: QuestionRequest, summary_id:str, current_user: dict = Depends(get_current_user)):
+    user_id = str(current_user['_id'])
     try:
-        # Parse request body
-        body_bytes = await request.body()
-        body_str = body_bytes.decode('utf-8')
-        body = json.loads(body_str)
-
-        query = body.get('query')
-        if not query:
-            raise HTTPException(status_code=400, detail="Query is required")
-        
-        # Verify user has access to this summary
-        summary = get_summary_by_id(summary_id)
-
-        # Initialize RAG service (ensure this is done per request to maintain isolation)
-        rag_service = RAGChatService(
-            openai_api_key=OPENAI_API_KEY,
-            tavily_api_key=TAVILY_API_KEY
-        )
-
-        # Prepare context using summary and source articles
-        rag_service.prepare_context(
-            source_articles=summary
-        )
-        
-        # Generate response
-        response = rag_service.generate_chat_response(query)
-        print(response)
-        # Optional: cleanup after response generation
-        rag_service.cleanup()
-        
-        return {
-            "response": response,
-            "summary_id": summary_id
-        }
-
+        response = await graph.process_stream(request.question, user_id=user_id)
+        return QuestionResponse(response=response)
     except Exception as e:
-        # Log the error for debugging
-        logger.error(f"Chat endpoint error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.post("/summaries/{summary_id}/init-thread")
+async def initialize_thread(summary_id: str, current_user: dict = Depends(get_current_user)):
+    thread_id = str(uuid.uuid4())
+    
+    # Update the summary document with the thread_id
+    result = await db.article_summaries.update_one(
+        {"_id": ObjectId(summary_id)},
+        {"$set": {"thread_id": thread_id}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Summary not found")
+        
+    return {"thread_id": thread_id}
+
+
+# @app.post("/api/chat/{summary_id}")
+# async def chat_endpoint(request: Request, summary_id: str, current_user: dict = Depends(get_current_user)):
+#     try:
+#         # Parse request body
+#         body_bytes = await request.body()
+#         body_str = body_bytes.decode('utf-8')
+#         body = json.loads(body_str)
+
+#         query = body.get('query')
+#         if not query:
+#             raise HTTPException(status_code=400, detail="Query is required")
+        
+#         # Verify user has access to this summary
+#         summary = get_summary_by_id(summary_id)
+
+#         # Initialize RAG service (ensure this is done per request to maintain isolation)
+#         rag_service = RAGChatService(
+#             openai_api_key=OPENAI_API_KEY,
+#             tavily_api_key=TAVILY_API_KEY
+#         )
+
+#         # Prepare context using summary and source articles
+#         rag_service.prepare_context(
+#             source_articles=summary
+#         )
+        
+#         # Generate response
+#         response = rag_service.generate_chat_response(query)
+#         print(response)
+#         # Optional: cleanup after response generation
+#         rag_service.cleanup()
+        
+#         return {
+#             "response": response,
+#             "summary_id": summary_id
+#         }
+
+#     except Exception as e:
+#         # Log the error for debugging
+#         logger.error(f"Chat endpoint error: {str(e)}")
+#         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/user_notifications/")
 async def user_notifications(current_user: dict = Depends(get_current_user)):
