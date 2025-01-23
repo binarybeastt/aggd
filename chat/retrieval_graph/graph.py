@@ -5,6 +5,7 @@ retrieval graph. It includes the main graph definition, state management,
 and key functions for processing user inputs, generating queries, retrieving
 relevant documents, and formulating responses.
 """
+import os
 import uuid
 from datetime import datetime, timezone
 from typing import cast
@@ -165,8 +166,17 @@ async def process_stream(question, user_id):
         }
     }
     
+    redis_host = os.getenv("REDIS_HOST")
+    redis_port = int(os.getenv("REDIS_PORT"))
+    redis_password = os.getenv("REDIS_PASSWORD")
+
     async with AsyncRedisSaver.from_conn_info(
-        host="localhost", port=6379, db=0
+        host=redis_host,
+        port=redis_port,
+        password=redis_password,
+        username="default",  # if needed
+        ssl=True,  # usually required for cloud Redis
+        db=0
     ) as checkpointer:
         graph = builder.compile(interrupt_before=[], interrupt_after=[], checkpointer=checkpointer)
         

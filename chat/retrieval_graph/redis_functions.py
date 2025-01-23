@@ -181,11 +181,27 @@ class AsyncRedisSaver(BaseCheckpointSaver):
     @classmethod
     @asynccontextmanager
     async def from_conn_info(
-        cls, *, host: str, port: int, db: int
+        cls, 
+        *, 
+        host: str, 
+        port: int, 
+        db: int = 0,
+        username: str = None,
+        password: str = None,
+        ssl: bool = False,
+        ssl_cert_reqs: str = None
     ) -> AsyncIterator["AsyncRedisSaver"]:
         conn = None
         try:
-            conn = AsyncRedis(host=host, port=port, db=db)
+            conn = AsyncRedis(
+                host=host, 
+                port=port, 
+                db=db,
+                username=username,
+                password=password,
+                ssl=ssl,
+                ssl_cert_reqs=ssl_cert_reqs
+            )
             yield AsyncRedisSaver(conn)
         finally:
             if conn:
