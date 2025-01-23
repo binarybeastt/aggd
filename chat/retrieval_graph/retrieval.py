@@ -14,8 +14,8 @@ from langchain_core.embeddings import Embeddings
 from langchain_core.runnables import RunnableConfig
 from langchain_core.vectorstores import VectorStoreRetriever
 
-from configuration import Configuration, IndexConfiguration
-from custom_retriever import CustomMongoDBRetriever
+from chat.retrieval_graph.configuration import Configuration, IndexConfiguration
+from chat.retrieval_graph.custom_retriever import CustomMongoDBRetriever
 from dotenv import load_dotenv
 load_dotenv()
 
