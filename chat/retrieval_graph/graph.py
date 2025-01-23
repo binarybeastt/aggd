@@ -20,7 +20,7 @@ from chat.retrieval_graph import retrieval
 from chat.retrieval_graph.configuration import Configuration
 from chat.retrieval_graph.state import InputState, State
 from chat.retrieval_graph.utils import format_docs, get_message_text, load_chat_model
-from redis_functions import *
+from chat.retrieval_graph.redis_functions import *
 
 import asyncio
 
