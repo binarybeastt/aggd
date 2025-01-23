@@ -17,9 +17,9 @@ from langchain_core.runnables import RunnableConfig
 from langgraph.graph import StateGraph
 
 from chat.retrieval_graph import retrieval
-from configuration import Configuration
-from state import InputState, State
-from utils import format_docs, get_message_text, load_chat_model
+from chat.retrieval_graph.configuration import Configuration
+from chat.retrieval_graph.state import InputState, State
+from chat.retrieval_graph.utils import format_docs, get_message_text, load_chat_model
 from redis_functions import *
 
 import asyncio
