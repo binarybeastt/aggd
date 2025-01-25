@@ -5,7 +5,7 @@ firebase_admin==6.6.0
 python-jose
 pydantic[email]
 langchain_community==0.3.11
-openai==1.57.3
+openai==1.59.8
 passlib==1.7.4
 praw==7.8.1
 pydantic==2.10.3
