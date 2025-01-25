@@ -114,7 +114,7 @@ def make_mongodb_retriever(
     """Create a custom MongoDB retriever that works with the retrieve function."""
     try:
         retriever = CustomMongoDBRetriever(
-            mongo_uri=os.environ["MONGODB_URI"],
+            mongo_uri=os.getenv("MONGODB_URI"),
             embedding_model=embedding_model,
             search_kwargs=configuration.search_kwargs
         )
