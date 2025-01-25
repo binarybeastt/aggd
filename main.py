@@ -188,11 +188,12 @@ async def test_notifications(current_user: dict = Depends(get_current_user)):
 #         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/chat/{summary_id}")
-async def ask_question(request: QuestionRequest, summary_id:str, current_user: dict = Depends(get_current_user)):
+async def ask_question(request: Request, summary_id:str, current_user: dict = Depends(get_current_user)):
     user_id = str(current_user['_id'])
     try:
-        response = await graph.process_stream(request.question, user_id=user_id)
-        return QuestionResponse(response=response)
+        question = await request.json()
+        response = await graph.process_stream(question['question'], user_id=user_id)
+        return {"response": response}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
