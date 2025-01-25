@@ -175,7 +175,6 @@ async def process_stream(question, user_id):
         port=redis_port,
         password=redis_password,
         username="default",  # if needed
-        ssl=True,  # usually required for cloud Redis
         db=0
     ) as checkpointer:
         graph = builder.compile(interrupt_before=[], interrupt_after=[], checkpointer=checkpointer)
