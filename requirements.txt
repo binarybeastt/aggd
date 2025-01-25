@@ -16,3 +16,4 @@ requests
 tavily-python
 langgraph==0.2.62
 redis==5.2.1
+langchain_openai==0.3.1
