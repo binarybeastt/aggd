@@ -7,6 +7,7 @@ The retrievers support filtering results by user_id to ensure data isolation bet
 """
 
 import os
+import logging
 from contextlib import contextmanager
 from typing import Generator, AsyncGenerator
 
@@ -18,6 +19,8 @@ from chat.retrieval_graph.configuration import Configuration, IndexConfiguration
 from chat.retrieval_graph.custom_retriever import CustomMongoDBRetriever
 from dotenv import load_dotenv
 load_dotenv()
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 ## Encoder constructors
 
@@ -111,6 +114,8 @@ def make_mongodb_retriever(
     configuration: IndexConfiguration, 
     embedding_model: Embeddings
 ) -> Generator[CustomMongoDBRetriever, None, None]:
+    logger.debug("MONGODB_URI present: %s", bool(os.getenv('MONGODB_URI')))
+    logger.debug("Current working directory: %s", Path.cwd())
     """Create a custom MongoDB retriever that works with the retrieve function."""
     try:
         retriever = CustomMongoDBRetriever(
