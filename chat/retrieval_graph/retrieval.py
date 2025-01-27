@@ -5,7 +5,7 @@ vector store backends, specifically Elasticsearch, Pinecone, and MongoDB.
 
 The retrievers support filtering results by user_id to ensure data isolation between users.
 """
-from config.config_loader import MONGODB_URI
+from config.config_loader import MONGO_URI
 import os
 import logging
 from contextlib import contextmanager
@@ -118,7 +118,7 @@ def make_mongodb_retriever(
     """Create a custom MongoDB retriever that works with the retrieve function."""
     try:
         retriever = CustomMongoDBRetriever(
-            mongo_uri=MONGODB_URI,
+            mongo_uri=MONGO_URI,
             embedding_model=embedding_model,
             search_kwargs=configuration.search_kwargs
         )
