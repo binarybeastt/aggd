@@ -6,3 +6,5 @@ def get_mongo_client():
     client = MongoClient(MONGO_URI)
     return client["content_db"]
 
+mongo_client = get_mongo_client()
+
