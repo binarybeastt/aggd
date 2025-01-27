@@ -115,8 +115,6 @@ def make_mongodb_retriever(
     configuration: IndexConfiguration, 
     embedding_model: Embeddings
 ) -> Generator[CustomMongoDBRetriever, None, None]:
-    logger.debug("MONGODB_URI present: %s", bool(os.getenv('MONGODB_URI')))
-    logger.debug("Current working directory: %s", Path.cwd())
     """Create a custom MongoDB retriever that works with the retrieve function."""
     try:
         retriever = CustomMongoDBRetriever(
