@@ -156,7 +156,7 @@ builder.add_edge("retrieve", "respond")
 #     interrupt_after=[],
 # )
 # graph.name = "RetrievalGraph"
-async def process_stream(question, user_id):
+async def process_stream(question, user_id, thread_id):
     input_state = {
         "messages": [
             HumanMessage(content=question)
@@ -188,7 +188,7 @@ async def process_stream(question, user_id):
                     "embedding_model": "openai/text-embedding-3-small",
                     "response_model": "openai/gpt-4o-mini",
                     "query_model": "openai/gpt-4o-mini",
-                    "thread_id":'2',
+                    "thread_id":thread_id,
                     "search_kwargs": {
                         "k": 4,
                         "search_options": {
