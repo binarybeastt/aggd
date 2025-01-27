@@ -9,6 +9,7 @@ The retrievers support filtering results by user_id to ensure data isolation bet
 import os
 import logging
 from contextlib import contextmanager
+from pathlib import Path
 from typing import Generator, AsyncGenerator
 
 from langchain_core.embeddings import Embeddings
