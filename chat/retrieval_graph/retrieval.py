@@ -20,8 +20,6 @@ from chat.retrieval_graph.configuration import Configuration, IndexConfiguration
 from chat.retrieval_graph.custom_retriever import CustomMongoDBRetriever
 from dotenv import load_dotenv
 load_dotenv()
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
 
 ## Encoder constructors
 

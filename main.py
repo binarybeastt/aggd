@@ -191,11 +191,12 @@ async def test_notifications(current_user: dict = Depends(get_current_user)):
 async def ask_question(request: Request, summary_id:str, current_user: dict = Depends(get_current_user)):
     user_id = str(current_user['_id'])
     try:
-        summary = await db.article_summaries.find_one({"_id": ObjectId(summary_id)})
+        question = await request.json()
+        summary = db.article_summaries.find_one({"_id": ObjectId(summary_id)})
         if not summary or 'thread_id' not in summary:
             raise HTTPException(status_code=404, detail="Summary or thread not found")
         thread_id = summary['thread_id']
-        question = await request.json()
+        
         response = await graph.process_stream(question['question'], user_id=user_id, thread_id=thread_id)
         return {"response": response}
     except Exception as e:
